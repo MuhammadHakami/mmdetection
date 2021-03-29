@@ -4,7 +4,7 @@ _base_ = '../_base_/default_runtime.py'
 img_size = 550
 model = dict(
     type='YOLACT',
-    pretrained='torchvision://resnet50',
+    pretrained=None,
     backbone=dict(
         type='ResNet',
         depth=50,
@@ -25,7 +25,7 @@ model = dict(
         upsample_cfg=dict(mode='bilinear')),
     bbox_head=dict(
         type='YOLACTHead',
-        num_classes=80,
+        num_classes=1,
         in_channels=256,
         feat_channels=256,
         anchor_generator=dict(
@@ -54,12 +54,12 @@ model = dict(
         type='YOLACTProtonet',
         in_channels=256,
         num_protos=32,
-        num_classes=80,
+        num_classes=1,
         max_masks_to_train=100,
         loss_mask_weight=6.125),
     segm_head=dict(
         type='YOLACTSegmHead',
-        num_classes=80,
+        num_classes=1,
         in_channels=256,
         loss_segm=dict(
             type='CrossEntropyLoss', use_sigmoid=True, loss_weight=1.0)))
@@ -85,8 +85,8 @@ test_cfg = dict(
     top_k=200,
     max_per_img=100)
 # dataset settings
-dataset_type = 'CocoDataset'
-data_root = 'data/coco/'
+dataset_type = 'SignDataset'
+data_root = '../data/market_sign/'
 img_norm_cfg = dict(
     mean=[123.68, 116.78, 103.94], std=[58.40, 57.12, 57.38], to_rgb=True)
 train_pipeline = [
@@ -137,12 +137,12 @@ data = dict(
         pipeline=train_pipeline),
     val=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/instances_val2017.json',
+        ann_file=data_root + 'annotations/instances_default.json',
         img_prefix=data_root + 'val2017/',
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/instances_val2017.json',
+        ann_file=data_root + 'annotations/instances_default.json',
         img_prefix=data_root + 'val2017/',
         pipeline=test_pipeline))
 # optimizer
@@ -155,6 +155,8 @@ lr_config = dict(
     warmup_iters=500,
     warmup_ratio=0.1,
     step=[20, 42, 49, 52])
-total_epochs = 55
+total_epochs = 100
 cudnn_benchmark = True
 evaluation = dict(metric=['bbox', 'segm'])
+
+load_from ="checkpoints/yolact_r50_1x8_coco_20200908-f38d58df.pth"
