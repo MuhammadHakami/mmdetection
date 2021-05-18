@@ -2,6 +2,21 @@
   <img src="resources/mmdet-logo.png" width="600"/>
 </div>
 
+# Quick Guide for training Custome COCO annotated data with instant segmentation.  
+1. Models configs can be found in configs. yolact in configs/yolact/yolact_r50_1x8_coco.py change the following for custome data:
+    - Change data_root variable to match your data's root relative or absalute path. (e.g. in my case data_root = '../data/market_sign/')
+    - Change ann_file and img_prefix variables inside data dictionary to point to annotation file and images folder respectivily using relative or absalute path.
+    - Change num_classes variables to match the number of your classes.
+    - Change samples_per_gpu for batch size and total_epochs for total training epochs(300 is a good coverage).
+    - Add load_from variable at the end of the config to load pre-trained model for training over pretrained (tuning) which is better than random weights in many cases.(e.g. load_from ="checkpoints/yolact_r50_1x8_coco_20200908-f38d58df.pth")
+    - You can rescale images and add augumentation by changing variable name img_size and adding more agumentation options to the train and test pipelines following the current augumentation implementation or creating new ones following the guidelines in the project documentation.
+2. Dataset configs can be found in mmdet/datasets/. choose a similar dataset style, copy-pasted with new name, add your labels/classes names with correct label order to CLASSES tuple, change the annotation class name and reflect that name in model config variable dataset_type.
+3. Start training by using this quick command from project root path ```python tools/train.py configs/yolact/yolact_r50_1x8_coco.py --no-validate``` providing the model config relative path to the training function.
+4. While training. i'm currently having the code to save the model for each epooch in case of power failure. please check the work_dirs folder for the training weights. everytime you retrain the folder will be deleted so make sure to save the last weight or best test preformer to another folder.
+5. After the training finishes, you may want to see some initial sanity check visual results. for that execute ```python tools/test.py configs/yolact/yolact_r50_1x8_coco.py checkpoints/yolact_r50_1x8_coco_uncorrected/latest.pth --show-dir results/``` pointing configs for model configs where you need to have testing ann_file and img_prefix variables correctly assigned to testing annotation file and images folder. and another needed function argument is the training weight path. then show-dir to save inferenced images to specific folder.
+
+Note: There is an implementation of masked rcnn with mixed precision/16bit training in model configs. if interested. you can choose that config instead of Yolact. this code exist for fast results. if preformance results were satisfactory we can migrate to edge yolact later on with similar settings for faster real-time inference speed/latency.
+
 **News**: We released the technical report on [ArXiv](https://arxiv.org/abs/1906.07155).
 
 Documentation: https://mmdetection.readthedocs.io/
